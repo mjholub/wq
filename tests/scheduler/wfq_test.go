@@ -127,12 +127,22 @@ func TestSchedule(t *testing.T) {
 	q1 := queue.NewQueue(10)
 	scheduler.AddQueue(q1)
 
-	task1 := &queue.Task{ID: ulid.Make(), Weight: 1, ExecTime: 1 * time.Second}
+	task1 := &queue.Task{ID: ulid.Make(),
+		Weight:    1,
+		ExecTime:  1 * time.Second,
+		Timestamp: time.Now(),
+	}
 	q1.AddTask(task1)
+
+	tasks := q1.GetTasks()
+	require.Lenf(t, tasks, 1, "Expected 1 task, got %d", len(tasks))
+	assert.Equalf(t, task1, tasks[0], "Expected task %v, got %v", task1, tasks[0])
 
 	scheduler.UpdateVirtualTime(time.Now())
 	task := scheduler.Schedule()
 
-	assert.Equal(t, task1, task)
-	assert.Equal(t, q1.LastFinish().Get(), scheduler.GetVirtualTime())
+	assert.Equalf(t, task1, task, "Expected task %v after scheduling, got %v", task1, task)
+	expectedVirtualTime := task1.Timestamp.Add(task1.ExecTime)
+	assert.Equalf(t, expectedVirtualTime, scheduler.GetVirtualTime(), "Expected virtual time %v, got %v", expectedVirtualTime, scheduler.GetVirtualTime())
+	assert.Equalf(t, 0, len(q1.GetTasks()), "Expected 0 tasks in queue, got %d", len(q1.GetTasks()))
 }

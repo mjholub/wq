@@ -15,7 +15,7 @@ func TestNewQueue(t *testing.T) {
 	require.NotNil(t, q)
 	assert.Equal(t, 10, q.GetWeight())
 	assert.Empty(t, q.GetTasks())
-	assert.Implements(t, q, (*scheduler.WFQSchedulable)(nil))
+	assert.Implements(t, (*scheduler.WFQSchedulable)(nil), q)
 }
 
 func TestAddTask(t *testing.T) {
